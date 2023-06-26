@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-// import Particles from 'react-particles-js';
 import ParticlesBg from "particles-bg";
 import FaceRecognition from "./components/FaceRecognition/FaceRecognition";
 import Navigation from "./components/Navigation/Navigation";
@@ -23,6 +22,8 @@ const initialState = {
     id: "",
     name: "",
     email: "",
+    age: "",
+    pet: "",
     entries: 0,
     joined: "",
   },
@@ -34,12 +35,46 @@ class App extends Component {
     this.state = initialState;
   }
 
+  componentDidMount() {
+    const token = window.sessionStorage.getItem("token");
+    if (token) {
+      fetch("http://localhost:3000/signin", {
+        method: "post",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data) {
+            fetch(`http://localhost:3000/profile/${data}`, {
+              method: "get",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: token,
+              },
+            })
+              .then((response) => response.json())
+              .then((user) => {
+                if (user && user.email) {
+                  this.loadUser(user);
+                  this.onRouteChange("home");
+                }
+              });
+          }
+        })
+        .catch((err) => console.log(err));
+    }
+  }
   loadUser = (data) => {
     this.setState({
       user: {
         id: data.id,
         name: data.name,
         email: data.email,
+        age: data.age,
+        pet: data.pet,
         entries: data.entries,
         joined: data.joined,
       },
@@ -47,26 +82,32 @@ class App extends Component {
   };
 
   calculateFaceLocation = (data) => {
-    const clarifaiFace = data.outputs[0].data.regions;
-    const image = document.getElementById("inputimage");
-    const width = Number(image.width);
-    const height = Number(image.height);
-    let boxes = [];
-    for (let i = 0; i < clarifaiFace.length; i++) {
-      boxes.push({
-        leftCol: clarifaiFace[i].region_info.bounding_box.left_col * width,
-        topRow: clarifaiFace[i].region_info.bounding_box.top_row * height,
-        rightCol:
-          width - clarifaiFace[i].region_info.bounding_box.right_col * width,
-        bottomRow:
-          height - clarifaiFace[i].region_info.bounding_box.bottom_row * height,
-      });
+    if (data.outputs) {
+      const clarifaiFace = data.outputs[0].data.regions;
+      const image = document.getElementById("inputimage");
+      const width = Number(image.width);
+      const height = Number(image.height);
+      let boxes = [];
+      for (let i = 0; i < clarifaiFace.length; i++) {
+        boxes.push({
+          leftCol: clarifaiFace[i].region_info.bounding_box.left_col * width,
+          topRow: clarifaiFace[i].region_info.bounding_box.top_row * height,
+          rightCol:
+            width - clarifaiFace[i].region_info.bounding_box.right_col * width,
+          bottomRow:
+            height -
+            clarifaiFace[i].region_info.bounding_box.bottom_row * height,
+        });
+      }
+      return boxes;
     }
-    return boxes;
+    return;
   };
 
   displayFaceBox = (boxes) => {
-    this.setState({ boxes: boxes });
+    if (boxes) {
+      this.setState({ boxes: boxes });
+    }
   };
 
   onInputChange = (event) => {
@@ -77,17 +118,26 @@ class App extends Component {
     this.setState({ imageUrl: this.state.input });
     fetch("http://localhost:3000/imageurl", {
       method: "post",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: window.sessionStorage.getItem("token"),
+      },
       body: JSON.stringify({
         input: this.state.input,
       }),
     })
       .then((response) => response.json())
       .then((response) => {
+        if (response === "Unauthorized") {
+          return this.setState(initialState);
+        }
         if (response) {
           fetch("http://localhost:3000/image", {
             method: "put",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: window.sessionStorage.getItem("token"),
+            },
             body: JSON.stringify({
               id: this.state.user.id,
             }),
@@ -96,7 +146,7 @@ class App extends Component {
             .then((count) => {
               this.setState(Object.assign(this.state.user, { entries: count }));
             })
-            .catch(console.log);
+            .catch((err) => console.log(err));
         }
         this.displayFaceBox(this.calculateFaceLocation(response));
       })
@@ -105,6 +155,7 @@ class App extends Component {
 
   onRouteChange = (route) => {
     if (route === "signout") {
+      window.sessionStorage.removeItem("token");
       return this.setState(initialState);
     } else if (route === "home") {
       this.setState({ isSignedIn: true });
@@ -120,7 +171,8 @@ class App extends Component {
   };
 
   render() {
-    const { isSignedIn, imageUrl, route, boxes, isProfileOpen } = this.state;
+    const { isSignedIn, imageUrl, route, boxes, isProfileOpen, user } =
+      this.state;
     return (
       <div className="App">
         <ParticlesBg type="circle" bg={true} />
@@ -134,6 +186,8 @@ class App extends Component {
             <Profile
               isProfileOpen={isProfileOpen}
               toggleModal={this.toggleModal}
+              user={user}
+              loadUser={this.loadUser}
             />
           </Modal>
         )}
