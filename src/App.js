@@ -63,8 +63,7 @@ class App extends Component {
                 }
               });
           }
-        })
-        .catch((err) => console.log(err));
+        }) 
     }
   }
   loadUser = (data) => {
@@ -146,11 +145,9 @@ class App extends Component {
             .then((count) => {
               this.setState(Object.assign(this.state.user, { entries: count }));
             })
-            .catch((err) => console.log(err));
         }
         this.displayFaceBox(this.calculateFaceLocation(response));
       })
-      .catch((err) => console.log(err));
   };
 
   onRouteChange = (route) => {

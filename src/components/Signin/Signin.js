@@ -39,7 +39,7 @@ class Signin extends React.Component {
             method: "get",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": data.token,
+              Authorization: data.token,
             },
           })
             .then((response) => response.json())
@@ -48,11 +48,9 @@ class Signin extends React.Component {
                 this.props.loadUser(user);
                 this.props.onRouteChange("home");
               }
-            })
-            .catch(err => console.log(err));
+            });
         }
-      })
-      .catch(err => console.log(err));
+      });
   };
 
   render() {
