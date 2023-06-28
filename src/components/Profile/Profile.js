@@ -1,4 +1,6 @@
 import React from "react";
+
+import { fetchHelper } from "../../helpers/fetch";
 import "./Profile.css";
 
 class Profile extends React.Component {
@@ -26,21 +28,19 @@ class Profile extends React.Component {
     }
   };
   onProfileUpdate = (data) => {
-    fetch(`http://localhost:3000/profile/${this.props.user.id}`, {
-      method: "post",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: window.sessionStorage.getItem("token"),
-      },
-      body: JSON.stringify({ formInput: data }),
-    })
+    fetchHelper(
+      `http://localhost:3000/profile/${this.props.user.id}`,
+      "post",
+      window.sessionStorage.getItem("token"),
+      { formInput: data }
+    )
       .then((res) => {
-        if (res.status === 200 || res.status === 304) {
+        if (res === "success") {
           this.props.toggleModal();
           this.props.loadUser({ ...this.props.user, ...data });
         }
       })
-      .catch(err => console.log(err));
+      .catch((err) => console.log(err));
   };
 
   render() {

@@ -1,4 +1,7 @@
 import React from "react";
+
+import { fetchHelper } from "../../helpers/fetch";
+
 import "../Signin/Signin.css";
 
 class Register extends React.Component {
@@ -28,35 +31,25 @@ class Register extends React.Component {
   };
 
   onSubmitSignIn = () => {
-    fetch("http://localhost:3000/register", {
-      method: "post",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: this.state.email,
-        password: this.state.password,
-        name: this.state.name,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.userId && data.success === "true") {
-          this.saveAuthTokenInSession(data.token);
-          fetch(`http://localhost:3000/profile/${data.userId}`, {
-            method: "get",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: data.token,
-            },
-          })
-            .then((response) => response.json())
-            .then((user) => {
-              if (user.id) {
-                this.props.loadUser(user);
-                this.props.onRouteChange("home");
-              }
-            })
-        }
-      });
+    fetchHelper("http://localhost:3000/register", "post", "", {
+      email: this.state.email,
+      password: this.state.password,
+      name: this.state.name,
+    }).then((data) => {
+      if (data.userId && data.success === "true") {
+        this.saveAuthTokenInSession(data.token);
+        fetchHelper(
+          `http://localhost:3000/profile/${data.userId}`,
+          "get",
+          data.token
+        ).then((user) => {
+          if (user.id) {
+            this.props.loadUser(user);
+            this.props.onRouteChange("home");
+          }
+        });
+      }
+    });
   };
 
   render() {

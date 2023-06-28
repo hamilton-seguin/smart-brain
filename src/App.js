@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import ParticlesBg from "particles-bg";
+
 import FaceRecognition from "./components/FaceRecognition/FaceRecognition";
 import Navigation from "./components/Navigation/Navigation";
 import Signin from "./components/Signin/Signin";
@@ -9,6 +10,8 @@ import ImageLinkForm from "./components/ImageLinkForm/ImageLinkForm";
 import Rank from "./components/Rank/Rank";
 import Modal from "./components/Modal/Modal";
 import Profile from "./components/Profile/Profile";
+import { fetchHelper } from "./helpers/fetch";
+
 import "./App.css";
 
 const initialState = {
@@ -38,32 +41,22 @@ class App extends Component {
   componentDidMount() {
     const token = window.sessionStorage.getItem("token");
     if (token) {
-      fetch("http://localhost:3000/signin", {
-        method: "post",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token,
-        },
-      })
-        .then((response) => response.json())
-        .then((data) => {
+      fetchHelper("http://localhost:3000/signin", "post", token).then(
+        (data) => {
           if (data) {
-            fetch(`http://localhost:3000/profile/${data}`, {
-              method: "get",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: token,
-              },
-            })
-              .then((response) => response.json())
-              .then((user) => {
-                if (user && user.email) {
-                  this.loadUser(user);
-                  this.onRouteChange("home");
-                }
-              });
+            fetchHelper(
+              `http://localhost:3000/profile/${data}`,
+              "get",
+              token
+            ).then((user) => {
+              if (user && user.email) {
+                this.loadUser(user);
+                this.onRouteChange("home");
+              }
+            });
           }
-        }) 
+        }
+      );
     }
   }
   loadUser = (data) => {
@@ -114,40 +107,31 @@ class App extends Component {
   };
 
   onButtonSubmit = () => {
+    const token = window.sessionStorage.getItem("token");
     this.setState({ imageUrl: this.state.input });
-    fetch("http://localhost:3000/imageurl", {
-      method: "post",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: window.sessionStorage.getItem("token"),
-      },
-      body: JSON.stringify({
-        input: this.state.input,
-      }),
-    })
-      .then((response) => response.json())
+    fetchHelper(
+      "http://localhost:3000/imageurl", 
+      "post", 
+      token, 
+      { input: this.state.input }
+    )
       .then((response) => {
         if (response === "Unauthorized") {
           return this.setState(initialState);
         }
         if (response) {
-          fetch("http://localhost:3000/image", {
-            method: "put",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: window.sessionStorage.getItem("token"),
-            },
-            body: JSON.stringify({
-              id: this.state.user.id,
-            }),
+          fetchHelper(
+            "http://localhost:3000/image", 
+            "put", 
+            token, {
+            id: this.state.user.id,
           })
-            .then((response) => response.json())
-            .then((count) => {
-              this.setState(Object.assign(this.state.user, { entries: count }));
-            })
+          .then((count) => {
+            this.setState(Object.assign(this.state.user, { entries: count }));
+          });
         }
         this.displayFaceBox(this.calculateFaceLocation(response));
-      })
+      });
   };
 
   onRouteChange = (route) => {
