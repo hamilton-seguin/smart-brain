@@ -44,7 +44,6 @@ const Rank = ({ name, entries }) => {
     )
       .then((response) => {
         response.json().then((data) => {
-          console.log("data", data);
           return setEmoji(data.input);
         });
       })

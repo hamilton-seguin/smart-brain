@@ -6,6 +6,9 @@ import {
   DropdownItem,
 } from "reactstrap";
 
+const avatar =
+  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa1vrEL9ELu5SObfwQd_nYtVQQQY-Py4gh6w&usqp=CAU";
+
 class ProfileIcon extends React.Component {
   constructor(props) {
     super(props);
@@ -13,6 +16,9 @@ class ProfileIcon extends React.Component {
       dropdownOpen: false,
     };
   }
+
+  defaultAvatar =
+    "https://tachyons.io/components/avatars/circle-border/screenshot.jpg?version=cb0db27a4c651b43cedc9c1a60548a25";
 
   toggle = () => {
     this.setState((prevState) => ({
@@ -30,7 +36,7 @@ class ProfileIcon extends React.Component {
             aria-expanded={this.state.dropdownOpen}
           >
             <img
-              src="https://tachyons.io/components/avatars/circle-border/screenshot.jpg?version=cb0db27a4c651b43cedc9c1a60548a25"
+              src={avatar || defaultAvatar}
               className="br-100 ba h3 w3 dib"
               alt="avatar"
             />
@@ -42,8 +48,12 @@ class ProfileIcon extends React.Component {
               backgroundColor: "rgba(255,255,255,0.5)",
             }}
           >
-            <DropdownItem onClick={this.props.toggleModal}>View Profile</DropdownItem>
-            <DropdownItem onClick={() => this.props.onRouteChange("signout")}>Sign Out</DropdownItem>
+            <DropdownItem onClick={this.props.toggleModal}>
+              View Profile
+            </DropdownItem>
+            <DropdownItem onClick={() => this.props.onRouteChange("signout")}>
+              Sign Out
+            </DropdownItem>
           </DropdownMenu>
         </Dropdown>
       </div>

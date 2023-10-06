@@ -1,7 +1,10 @@
 import React from "react";
 
+import { Avatar } from "../Avatar/Avatar";
+
 import { fetchHelper } from "../../helpers/fetch";
 import "./Profile.css";
+
 
 class Profile extends React.Component {
   constructor(props) {
@@ -10,8 +13,11 @@ class Profile extends React.Component {
       name: this.props.user.name,
       age: this.props.user.age,
       pet: this.props.user.pet,
+      id: this.props.user.id,
     };
   }
+  defaultAvatar =
+    "https://tachyons.io/components/avatars/circle-border/screenshot.jpg?version=cb0db27a4c651b43cedc9c1a60548a25";
   onFormChange = (event) => {
     switch (event.target.name) {
       case "user-name":
@@ -45,16 +51,13 @@ class Profile extends React.Component {
 
   render() {
     const { user } = this.props;
-    const { name, age, pet } = this.state;
+    const { name, age, pet, id } = this.state;
     return (
       <div className="profile-modal">
         <article className="br3 ba b--black-10 mv4 w-100 w-50-m w-25-l mw6 shadow-5 center bg-white">
           <main className="pa4 black-80 w-80">
-            <img
-              src="https://tachyons.io/components/avatars/circle-border/screenshot.jpg?version=cb0db27a4c651b43cedc9c1a60548a25"
-              className="h3 w3 dib"
-              alt="avatar"
-            />
+
+            <Avatar id={id} />
             <h1>{this.state.name}</h1>
             <h4>{`Images Submitted: ${user.entries}`}</h4>
             <p>{`Member since: ${new Date(
